@@ -53,14 +53,12 @@ exports.register = (req, res, next) => {
 exports.login = (req,res, next) => {
     let email    = req.body.email;
     let password = req.body.password;
-    let userId = jwt.userId;
 
     if (email == null ||  password == null) {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
     User.findOne({
-        attributes: [ 'id', 'email', 'username', 'bio' ],
-        where: { id: userId }
+        where: { email: email }
     })
     .then (user => {
         if(!user){
@@ -72,9 +70,9 @@ exports.login = (req,res, next) => {
             return res.status(401).json({ error: 'Mot de passe incorrect !' });
             }
             res.status(200).json({
-                userId: user._id,
+                userId: user.id,
                 token: jwt.sign(//création d'un token d'authentification
-                { userId: user._id },
+                { userId: user.id },
                 process.env.TOKEN_SECRET,
                 { expiresIn: '24h' }
             )
