@@ -12,7 +12,7 @@ exports.createMessage = (req, res) => {
     }
     const message = {
         content: req.body.content,
-        userId: jwt.userID,
+        userId: req.userId,
         attachment : req.body.attachment,
     };
     Message.create(message)

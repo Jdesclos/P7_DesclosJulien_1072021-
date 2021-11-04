@@ -1,8 +1,9 @@
 const db = require("../models");
+const fs = require('fs');
 const User = db.user;
 const jwt = require('../midleware/auth.midleware');
 const bcrypt = require('bcrypt');
-
+const jwtUtils = require('../utils/auth.utils');
 const EMAIL_REGEX     = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const PASSWORD_REGEX  = /^(?=.*\d).{4,8}$/;
 
@@ -63,50 +64,51 @@ exports.login = (req,res, next) => {
     .then (user => {
         if(!user){
             return res.status(401).json({ error: 'Utilisateur non trouvé !' });
-        }
+        }else{
+            console.log('user found');
         bcrypt.compare(password, user.password)
+        
         .then(valid => {
             if (!valid) {
             return res.status(401).json({ error: 'Mot de passe incorrect !' });
-            }
-            res.status(200).json({
+            }else{
+                console.log('password correct')
+             return res.status(201).json({
                 userId: user.id,
-                token: jwt.sign(//création d'un token d'authentification
-                { userId: user.id },
-                process.env.TOKEN_SECRET,
-                { expiresIn: '24h' }
-            )
+                token: jwtUtils.generateTokenForUser(user)
             });
+        }
         })
         .catch(error => res.status(500).json({ error }));
+    }
     })
 };
 
-exports.modifyUser = (req, res, next) => {
+exports.update = (req, res) => {
     const id = req.params.id;
-
+  console.log(req.body)
     User.update(req.body, {
-        where: { id: id }
+      where: { id: id }
     })
-    .then(num => {
+      .then(num => {
         if (num == 1) {
-            res.send({
-            message: "Message was updated successfully."
-        });
+          res.send({
+            message: "User was updated successfully."
+          });
         } else {
-            res.send({
-            message: `Cannot update Message with id=${id}. Maybe Message was not found or req.body is empty!`
-        });
+          res.send({
+            message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`
+          });
         }
-    })
-    .catch(err => {
+      })
+      .catch(err => {
         res.status(500).send({
-            message: "Error updating Message with id=" + id
+          message: "Error updating User with id=" + id
         });
-    });
-};
+      });
+  };
 
-exports.deleteUser = (req, res) => {
+exports.delete = (req, res) => {
     const id = req.params.id;
 
     User.destroy({

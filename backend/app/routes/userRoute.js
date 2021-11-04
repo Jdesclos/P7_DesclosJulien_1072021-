@@ -3,9 +3,9 @@ const router = express.Router();
 const multer = require('../midleware/multer.midleware');
 const auth = require('../midleware/auth.midleware');
 
-const messages = require('../controllers/user.controller');
-router.post('/users/register', multer, messages.register);
-router.post('/users/login',  multer, messages.login);
-router.put('/users/:id', auth, multer, messages.modifyUser);
-router.delete('/users/:id', auth, messages.deleteUser);
+const users = require('../controllers/user.controller');
+router.post('/users/register', multer, users.register);
+router.post('/users/login',  multer, users.login);
+router.put('/users/:id', auth, multer, users.update);
+router.delete('/users/:id', auth, users.delete);
 module.exports = router;
