@@ -8,4 +8,5 @@ router.get('/home', auth, messageControllers.findAllMessage);
 router.post('/home', auth, multer, messageControllers.createMessage);
 router.put('/messages/:id', auth, messageControllers.modifyMessage);
 router.delete('/messages/:id', auth, messageControllers.deleteMessage);
+router.get('/messages', auth, messageControllers.findAllById);
 module.exports = router;

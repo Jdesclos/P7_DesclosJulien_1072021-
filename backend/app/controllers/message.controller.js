@@ -29,10 +29,8 @@ exports.createMessage = (req, res) => {
 
 // Retrieve all Messagess from the database.
 exports.findAllMessage = (req, res) => {
-    const content = req.query.content;
-    var condition = content ? { content: { [Op.like]: `%${content}%` } } : null;
-
-    Message.findAll({ where: condition,limit: 10 })
+    var order   = req.query.order;
+    Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  })
         .then(data => {
             res.send(data);
     })
@@ -98,9 +96,10 @@ exports.deleteMessage = (req, res) => {
 //find all message by id
 
 exports.findAllById = (req, res) => {
-    const id = req.params.id;
+        const id = req.userId;
+        console.log(id);
     Message.findAll({
-        where: { id: id },
+        where: { userId: id },
         limit: 10
     })
     .then(data => {
