@@ -4,7 +4,7 @@ const multer = require('../midleware/multer.midleware');
 const auth = require('../midleware/auth.midleware');
 
 const messageControllers = require('../controllers/message.controller');
-router.get('/home', auth, messageControllers.findAllMessage);
+router.get('/home',  auth, messageControllers.findAllMessage);
 router.post('/home', auth, multer, messageControllers.createMessage);
 router.put('/messages/:id', auth, messageControllers.modifyMessage);
 router.delete('/messages/:id', auth, messageControllers.deleteMessage);

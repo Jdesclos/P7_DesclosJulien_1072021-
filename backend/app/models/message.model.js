@@ -14,7 +14,14 @@ module.exports = (sequelize, Sequelize) => {
         },
       userId : {
           type: Sequelize.INTEGER
-      }
+      },
+      messageId : {
+        type: Sequelize.INTEGER
+     },
+      likes: {
+        type: Sequelize.INTEGER,
+        default: 0
+     }
     });
   
     return Message;

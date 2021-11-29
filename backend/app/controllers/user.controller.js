@@ -4,6 +4,7 @@ const User = db.user;
 const jwt = require('../midleware/auth.midleware');
 const bcrypt = require('bcrypt');
 const jwtUtils = require('../utils/auth.utils');
+const localStorage= require('node-localstorage');
 const EMAIL_REGEX     = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const PASSWORD_REGEX  = /^(?=.*\d).{4,8}$/;
 
@@ -69,16 +70,17 @@ exports.login = (req,res, next) => {
         bcrypt.compare(password, user.password)
         
         .then(valid => {
-            if (!valid) {
+            if (!valid && typeof localStorage === "undefined" || localStorage === null) {
             return res.status(401).json({ error: 'Mot de passe incorrect !' });
-            }else{
+        }else{          
                 console.log('password correct')
-             return res.status(201).json({
-                userId: user.id,
-                token: jwtUtils.generateTokenForUser(user)
-            });
-        }
-        })
+                return res.status(201).json({
+                    userId: user.id,
+                    token: jwtUtils.generateTokenForUser(user),
+                    username: user.username
+                });
+            }
+            })
         .catch(error => res.status(500).json({ error }));
     }
     })
@@ -117,17 +119,17 @@ exports.delete = (req, res) => {
     .then(num => {
         if (num == 1) {
             res.send({
-            message: "Message was deleted successfully!"
+            message: "User was deleted successfully!"
         });
         } else {
             res.send({
-            message: `Cannot delete Message with id=${id}. Maybe Message was not found!`
+            message: `Cannot delete User with id=${id}. Maybe Message was not found!`
         });
         }
     })
     .catch(err => {
         res.status(500).send({
-            message: "Could not delete Message with id=" + id
+            message: "Could not delete User with id=" + id
         });
     });
 };
