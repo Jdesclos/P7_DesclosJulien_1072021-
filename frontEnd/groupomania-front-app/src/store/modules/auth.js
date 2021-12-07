@@ -32,8 +32,8 @@ const actions = {
         .then(function (response) {          
           const token = response.data.token;
           const userId = response.data.userId;
-          return commit('setToken', token)
           commit('setUserId', userId)
+          return commit('setToken', token)
         })
         await commit('setUser', User.get('username'))
       },
