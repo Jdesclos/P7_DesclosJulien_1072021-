@@ -7,7 +7,10 @@ const userRoute = require("./app/routes/userRoute");
 const userMessage = require("./app/routes/messageRoute");
 const app = express();
 const db = require("./app/models");
-db.sequelize.sync();
+// db.sequelize.sync();
+db.sequelize.sync({ force: true }).then(() => {
+  console.log("Drop and re-sync db.");
+});
 app.use(cookieParser());
 
 const cors=require("cors");

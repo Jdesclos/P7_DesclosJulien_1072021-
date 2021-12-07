@@ -53,14 +53,14 @@ exports.register = (req, res, next) => {
 };
 
 exports.login = (req,res, next) => {
-    let email    = req.body.email;
+    let username    = req.body.username;
     let password = req.body.password;
 
-    if (email == null ||  password == null) {
+    if (username == null ||  password == null) {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
     User.findOne({
-        where: { email: email }
+        where: { username: username }
     })
     .then (user => {
         if(!user){
@@ -77,7 +77,7 @@ exports.login = (req,res, next) => {
                 return res.status(201).json({
                     userId: user.id,
                     token: jwtUtils.generateTokenForUser(user),
-                    username: user.username
+                    username: user.username,
                 });
             }
             })
@@ -133,3 +133,11 @@ exports.delete = (req, res) => {
         });
     });
 };
+
+exports.getUser = (req,res)=> {
+    const username = req.body.username;
+    User.findOne({ where: { username: username }})
+    .then(data => {
+        res.send(data);
+    })
+}

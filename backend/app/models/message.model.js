@@ -21,7 +21,21 @@ module.exports = (sequelize, Sequelize) => {
       likes: {
         type: Sequelize.INTEGER,
         default: 0
-     }
+     },
+     userLiked: {
+       type: Sequelize.STRING,
+       default:''
+     }},
+     {
+      classMethods: {
+        associate: function(models){
+          models.Message.belongsTo(models.User, {
+            foreignKey:{
+              allowNull: false
+            }
+          })
+        }
+      }
     });
   
     return Message;

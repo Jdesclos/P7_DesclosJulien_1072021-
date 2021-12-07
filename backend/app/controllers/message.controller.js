@@ -4,17 +4,18 @@ const Op = db.Sequelize.Op;
 const jwt = require("../midleware/auth.midleware")
 // Create and Save a new Messages
 exports.createMessage = (req, res) => {
-    if (!req.body.content) {
+    console.log(req)
+    if (!req.body.post.content) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
     return;
     }
     const message = {
-        content: req.body.content,
-        userId: req.userId,
-        attachment : req.body.attachment,
+        content: req.body.post.content,
+        attachment : req.body.post.attachment,
     };
+    console.log(message);
     Message.create(message)
     .then(data => {
         res.send(data);
@@ -32,6 +33,7 @@ exports.findAllMessage = (req, res) => {
     var order   = req.query.order;
     Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  })
         .then(data => {
+            //requete user id dans data
             res.send(data);
     })
     .catch(err => {
@@ -112,3 +114,34 @@ exports.findAllById = (req, res) => {
         });
     });
 }
+
+//Likes
+
+exports.like =(req,res,next)=>{
+    let {like, userId, id}= req.body;
+    switch(like){
+      case 1 :
+        Message.findOne({ _id: id })
+          .then((message) => {
+            if(message.userLiked.includes(userId)){
+              res.status(200).json({message:`L'utilisateur a dejà liké cette message`})
+            }
+            else
+            {Message.updateOne({_id: id}, {$push: {userLiked: userId},$inc:{likes: +1}})
+            .then(()=>res.status(200).json({message: `J'aime`}))
+            .catch((error)=>res.status(400).json({error}))}
+          })
+        break;
+      case 0 :
+          Message.findOne({ _id: id })
+            .then((message) => {
+              if (message.userLiked.includes(userId)) {
+                Message.updateOne({ _id: id }, { $pull: { userLiked: userId }, $inc: { likes: -1 }})
+                  .then(() => res.status(200).json({ message: `Neutre` }))
+                  .catch((error) => res.status(400).json({ error }))
+              }
+            })
+            .catch((error) => res.status(404).json({ error }))
+        break;
+    }
+  };

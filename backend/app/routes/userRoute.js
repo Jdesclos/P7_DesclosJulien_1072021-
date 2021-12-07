@@ -8,4 +8,5 @@ router.post('/users/register', multer, users.register);
 router.post('/users/login',  multer, users.login);
 router.put('/users/:id', auth, multer, users.update);
 router.delete('/users/:id', auth, users.delete);
+router.get('/home', users.getUser);
 module.exports = router;
