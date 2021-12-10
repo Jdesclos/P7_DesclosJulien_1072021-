@@ -4,7 +4,6 @@ const Op = db.Sequelize.Op;
 const jwt = require("../midleware/auth.midleware")
 // Create and Save a new Messages
 exports.createMessage = (req, res) => {
-    console.log(req)
     if (!req.body.post.content) {
         res.status(400).send({
             message: "Content can not be empty!"
@@ -14,6 +13,9 @@ exports.createMessage = (req, res) => {
     const message = {
         content: req.body.post.content,
         attachment : req.body.post.attachment,
+        userId:req.userId,
+        likes: 0,
+        messageId:req.body.post.messageId
     };
     console.log(message);
     Message.create(message)
@@ -30,11 +32,14 @@ exports.createMessage = (req, res) => {
 
 // Retrieve all Messagess from the database.
 exports.findAllMessage = (req, res) => {
+
     var order   = req.query.order;
     Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  })
         .then(data => {
+           let posts = groupCommentByPost(data)
             //requete user id dans data
-            res.send(data);
+            console.log(posts)
+            res.send(posts);
     })
     .catch(err => {
         res.status(500).send({
@@ -145,3 +150,17 @@ exports.like =(req,res,next)=>{
         break;
     }
   };
+
+function groupCommentByPost(posts){
+    let response= [];
+    posts.forEach(message => {
+        message.comments = [];
+        const comment = posts.filter(m => m.id === message.messageId);
+        message.comments.push(comment);
+        response.push(message);
+        console.log(response)        
+    });
+    // response = response.filter(post => post.messageId !== null);
+    // console.log(response);
+    return response;
+}

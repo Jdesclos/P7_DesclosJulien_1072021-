@@ -40,10 +40,23 @@ const actions = {
       async CreatePost({dispatch}, post) {
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
+        const userId = vuex.auth.userId;
         await axios({
           method:'post',
           url:'/api/home',
-          data:{post},
+          data:{post, userId},
+          headers:{Authorization: `Bearer ${token}`}
+        })         
+        await dispatch('GetPosts',token)
+      },
+      async CreateComment({dispatch}, post) {
+        const vuex = JSON.parse(localStorage.getItem('vuex'));
+        const token = vuex.auth.token;
+        const userId = vuex.auth.userId;
+        await axios({
+          method:'post',
+          url:'/api/home',
+          data:{post, userId},
           headers:{Authorization: `Bearer ${token}`}
         })         
         await dispatch('GetPosts',token)
@@ -66,10 +79,11 @@ const actions = {
       async LikePost(like){
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
+        const userLiked= vuex.auth.user;
         await axios({
           method:'post',
           url:'/api/home',
-          data:{like},
+          data:{like,userLiked},
           headers:{Authorization: `Bearer ${token}`}
         })  
       }

@@ -65,7 +65,7 @@
 
                 <!--- \\\\\\\Post-->
                 <div v-for="post in Posts" :key="post.id" class="post_area">
-                  <div  class="card gedf-card">
+                  <div v-if="post.messageId === null" class="card gedf-card"  :v-bind:id="post.id">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex justify-content-between align-items-center">
@@ -73,7 +73,7 @@
                                     <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
                                 </div>
                                 <div class="ml-2">
-                                    <div class="h5 m-0">@{{post.username}}</div>
+                                    <div class="h5 m-0">@{{post.userId}}</div>
                                 </div>
                             </div>
                         </div>
@@ -83,30 +83,30 @@
                         <p class="card-text">{{post.content}}</p>
                     </div>
                     <div class="card-footer">
-                        <button type="submit" class="btn" v-text="text" v-bind:class="{'btn-unlike': ! liked, 'btn-like': liked}" @click=" toggleLike" v-bind:disabled="submitted">Like</button>
+                        <button type="submit" class="btn" v-text="text" v-bind:class="{'btn-unlike': ! liked, 'btn-like': liked}" @click=" toggleLike" v-bind:disabled="submitted"><i class="fas fa-thumbs-up"></i></button>
                         <a href="#" @click="showComment" class="card-link"><i class="fa fa-comment"></i> Comment</a>
                     </div>
-                  </div>
                   <div v-show="toggleComment">
                        <div class="form-group">
                                     <label class="sr-only" for="message">post</label>
-                                    <textarea v-model="form.content" class="form-control" id="message" rows="3" placeholder="Réagir au commentaire"></textarea>
+                                    <textarea v-model="formComment.content" class="form-control" id="message" rows="3" placeholder="Réagir au commentaire">Réagir au commentaire</textarea>
                         </div>
                         <div class="btn-toolbar justify-content-between">
                             <div class="btn-group">
-                                <button @click.stop="showComment" type="submit" class="btn btn-primary">Partager</button>
+                                <button @click.stop="showComment" @click="submitComment(post.id)" type="submit" class="btn btn-primary">Partager</button>
                             </div>
                         </div>
+                    </div>
                   </div>
-                  <div v-for="comment in comments" :key="comment.id" class="comment_space">
-                    <div v-if="post.messageId == post.id" class="comment-header">
+                         <div v-if="post.messageId == post.id" class="comment_space">
+                    <div  class="comment-header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="mr-2">
                                         <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
                                     </div>
                                     <div class="ml-2">
-                                        <div class="h5 m-0">@{{post.username}}</div>
+                                        <div class="h5 m-0">@{{post.userId}}</div>
                                     </div>
                                 </div>
                             </div>
@@ -143,12 +143,12 @@ export default {
   data() {
     return {
         toggleComment: false,
-        likeData:{
-            like:0,
-            userId:'',//qui like le message
-            id:'' //id du message
-        },
+        like:0,
       form: {
+        attachement: '',
+        content: '',
+      },
+      formComment: {
         attachement: '',
         content: '',
       }
@@ -162,10 +162,19 @@ export default {
     ...mapGetters({Posts: "StatePosts", User: "StateUser", Token:"StateToken"}),
   },
   methods: {
-    ...mapActions(["CreatePost", "GetPosts"]),
+    ...mapActions(["CreatePost", "GetPosts","CreateComment","likePost"]),
     async submit() {
       try {
         await this.CreatePost(this.form)
+      } catch (error) {
+        throw "Sorry you can't make a post now!"
+      }
+    },
+    async submitComment(id) {
+       console.log(id)      
+      try {
+          this.formComment.messageId = id;
+        await this.CreateComment(this.formComment)
       } catch (error) {
         throw "Sorry you can't make a post now!"
       }
@@ -181,14 +190,27 @@ export default {
     },
     toggleLike(){
         if(this.liked) {
-            this.unlikePhoto()
+            this.addUnlike()
         } else {
-            this.likePhoto()
+            this.addLike()
     }},
-    likePost(){
+    async addLike(){
         this.submitted = true;
         this.like = 1;
-        this.userId=''
+        try {
+        await this.likePost(this.like)
+      } catch (error) {
+        throw "Sorry you can't like a post now!"
+      }
+    },
+    async addUnlike(){
+        this.submitted = false;
+        this.like = 0;
+        try {
+        await this.likePost(this.like)
+      } catch (error) {
+        throw "Sorry you can't unlike a post now!"
+      }
     }
 },
 };
