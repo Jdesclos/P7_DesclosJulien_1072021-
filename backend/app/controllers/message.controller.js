@@ -15,7 +15,8 @@ exports.createMessage = (req, res) => {
         attachment : req.body.post.attachment,
         userId:req.userId,
         likes: 0,
-        messageId:req.body.post.messageId
+        messageId:req.body.post.messageId,
+        userLiked:'',
     };
     console.log(message);
     Message.create(message)
@@ -38,7 +39,6 @@ exports.findAllMessage = (req, res) => {
         .then(data => {
            let posts = groupCommentByPost(data)
             //requete user id dans data
-            console.log(posts)
             res.send(posts);
     })
     .catch(err => {
@@ -123,16 +123,19 @@ exports.findAllById = (req, res) => {
 //Likes
 
 exports.like =(req,res,next)=>{
-    let {like, userId, id}= req.body;
+    console.log(req.body);
+    let userId= req.body.userId;
+    let like = req.body.sendLike.like;
+    let id = req.body.sendLike.id;
     switch(like){
-      case 1 :
-        Message.findOne({ _id: id })
-          .then((message) => {
+        case 1 :
+            Message.findOne({ _id: id })
+            .then((message) => {
             if(message.userLiked.includes(userId)){
               res.status(200).json({message:`L'utilisateur a dejà liké cette message`})
             }
             else
-            {Message.updateOne({_id: id}, {$push: {userLiked: userId},$inc:{likes: +1}})
+            {Message.update({_id: id}, {$push: {userLiked: userId},$inc:{likes: +1}})
             .then(()=>res.status(200).json({message: `J'aime`}))
             .catch((error)=>res.status(400).json({error}))}
           })
@@ -141,7 +144,7 @@ exports.like =(req,res,next)=>{
           Message.findOne({ _id: id })
             .then((message) => {
               if (message.userLiked.includes(userId)) {
-                Message.updateOne({ _id: id }, { $pull: { userLiked: userId }, $inc: { likes: -1 }})
+                Message.update({ _id: id }, { $pull: { userLiked: userId }, $inc: { likes: -1 }})
                   .then(() => res.status(200).json({ message: `Neutre` }))
                   .catch((error) => res.status(400).json({ error }))
               }
@@ -157,8 +160,7 @@ function groupCommentByPost(posts){
         message.comments = [];
         const comment = posts.filter(m => m.id === message.messageId);
         message.comments.push(comment);
-        response.push(message);
-        console.log(response)        
+        response.push(message);      
     });
     // response = response.filter(post => post.messageId !== null);
     // console.log(response);

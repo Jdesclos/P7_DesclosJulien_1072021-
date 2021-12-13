@@ -76,16 +76,17 @@ const actions = {
         let user = null
         commit('logout', user)
       },
-      async LikePost(like){
+      async LikePost({dispatch},sendLike){
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
-        const userLiked= vuex.auth.user;
+        const userId= vuex.auth.userId;
         await axios({
           method:'post',
-          url:'/api/home',
-          data:{like,userLiked},
+          url:'/api/home/:id/like',
+          data:{sendLike, userId},
           headers:{Authorization: `Bearer ${token}`}
         })  
+        await dispatch('GetPosts',token)
       }
       
 };

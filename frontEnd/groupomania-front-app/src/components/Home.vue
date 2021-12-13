@@ -83,7 +83,7 @@
                         <p class="card-text">{{post.content}}</p>
                     </div>
                     <div class="card-footer">
-                        <button type="submit" class="btn" v-text="text" v-bind:class="{'btn-unlike': ! liked, 'btn-like': liked}" @click=" toggleLike" v-bind:disabled="submitted"><i class="fas fa-thumbs-up"></i></button>
+                        <button type="submit" class="btn" v-text="text" v-bind:class="{'btn-unlike': ! liked, 'btn-like': liked}" @click="toggleLike(post.id)" v-bind:disabled="submitted"><i class="fas fa-thumbs-up"></i></button>
                         <a href="#" @click="showComment" class="card-link"><i class="fa fa-comment"></i> Comment</a>
                     </div>
                   <div v-show="toggleComment">
@@ -143,7 +143,10 @@ export default {
   data() {
     return {
         toggleComment: false,
-        like:0,
+        sendLike: {
+          like:0,
+          id:0
+        },
       form: {
         attachement: '',
         content: '',
@@ -162,7 +165,7 @@ export default {
     ...mapGetters({Posts: "StatePosts", User: "StateUser", Token:"StateToken"}),
   },
   methods: {
-    ...mapActions(["CreatePost", "GetPosts","CreateComment","likePost"]),
+    ...mapActions(["CreatePost", "GetPosts","CreateComment","LikePost"]),
     async submit() {
       try {
         await this.CreatePost(this.form)
@@ -170,8 +173,7 @@ export default {
         throw "Sorry you can't make a post now!"
       }
     },
-    async submitComment(id) {
-       console.log(id)      
+    async submitComment(id) {    
       try {
           this.formComment.messageId = id;
         await this.CreateComment(this.formComment)
@@ -188,28 +190,30 @@ export default {
             return this.toggleComment = false
         }
     },
-    toggleLike(){
+    toggleLike(id){
         if(this.liked) {
-            this.addUnlike()
+            this.addUnlike(id)
         } else {
-            this.addLike()
+            this.addLike(id)
     }},
-    async addLike(){
-        this.submitted = true;
-        this.like = 1;
-        try {
-        await this.likePost(this.like)
+    async addLike(id){
+      try {
+          this.submitted = true;
+          this.sendLike.like = 1;
+          this.sendLike.id= id;
+        await this.LikePost(this.sendLike)
       } catch (error) {
-        throw "Sorry you can't like a post now!"
+        throw `Sorry you can't unlike a post now! ${error}`
       }
     },
-    async addUnlike(){
-        this.submitted = false;
-        this.like = 0;
-        try {
-        await this.likePost(this.like)
+    async addUnlike(id){
+      try {
+          this.submitted = false;
+          this.sendLike.like = 0;
+          this.sendLike.id= id;
+        await this.LikePost(this.sendLike)
       } catch (error) {
-        throw "Sorry you can't unlike a post now!"
+        throw `Sorry you can't unlike a post now! ${error}` 
       }
     }
 },
