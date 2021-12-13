@@ -65,7 +65,7 @@
 
                 <!--- \\\\\\\Post-->
                 <div v-for="post in Posts" :key="post.id" class="post_area">
-                  <div v-if="post.messageId === null" class="card gedf-card"  :v-bind:id="post.id">
+                  <div  class="card gedf-card"  :v-bind:id="post.id">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex justify-content-between align-items-center">
@@ -98,7 +98,7 @@
                         </div>
                     </div>
                   </div>
-                         <div v-if="post.messageId == post.id" class="comment_space">
+                         <div  class="comment_space">
                     <div  class="comment-header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex justify-content-between align-items-center">

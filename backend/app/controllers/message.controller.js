@@ -38,6 +38,7 @@ exports.findAllMessage = (req, res) => {
     Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  })
         .then(data => {
            let posts = groupCommentByPost(data)
+           console.log(posts);
             //requete user id dans data
             res.send(posts);
     })
@@ -137,7 +138,7 @@ exports.like =(req,res,next)=>{
             else
             {Message.update({_id: id}, {$push: {userLiked: userId},$inc:{likes: +1}})
             .then(()=>res.status(200).json({message: `J'aime`}))
-            .catch((error)=>res.status(400).json({error}))}
+            .catch(console.log(Message),(error)=>res.status(400).json({error}))}
           })
         break;
       case 0 :
@@ -157,12 +158,11 @@ exports.like =(req,res,next)=>{
 function groupCommentByPost(posts){
     let response= [];
     posts.forEach(message => {
-        message.comments = [];
-        const comment = posts.filter(m => m.id === message.messageId);
-        message.comments.push(comment);
+        const comment = posts.filter(m => message.id === m.messageId);
+        message.dataValues.comments = comment;
         response.push(message);      
     });
     // response = response.filter(post => post.messageId !== null);
-    // console.log(response);
+    console.log(response);
     return response;
 }

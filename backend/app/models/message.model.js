@@ -1,3 +1,5 @@
+
+
 module.exports = (sequelize, Sequelize) => {
     const Message = sequelize.define("message", {
       id: {
@@ -22,6 +24,10 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.INTEGER,
         default: 0
      },
+  //    comments: {
+  //     type: Sequelize.ARRAY(Sequelize.JSON),
+  //     default: []
+  //  },
      userLiked: {
        type: Sequelize.STRING,
        default:''
