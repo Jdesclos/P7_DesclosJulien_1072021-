@@ -126,34 +126,21 @@ exports.findAllById = (req, res) => {
 exports.like =(req,res,next)=>{
     console.log(req.body);
     let userId= req.body.userId;
-    let like = req.body.sendLike.like;
-    let id = req.body.sendLike.id;
-    switch(like){
-        case 1 :
+    let id = req.body.sendLike.id;        
             Message.findOne({ _id: id })
             .then((message) => {
             if(message.userLiked.includes(userId)){
-              res.status(200).json({message:`L'utilisateur a dejà liké cette message`})
+                Message.update({ _id: id }, { $pull: { userLiked: userId }, $inc: { likes: -1 }})
+                .then(() => res.status(200).json({ message: `Neutre` }))
+                .catch((error) => res.status(400).json({ error }))
             }
             else
             {Message.update({_id: id}, {$push: {userLiked: userId},$inc:{likes: +1}})
             .then(()=>res.status(200).json({message: `J'aime`}))
             .catch(console.log(Message),(error)=>res.status(400).json({error}))}
           })
-        break;
-      case 0 :
-          Message.findOne({ _id: id })
-            .then((message) => {
-              if (message.userLiked.includes(userId)) {
-                Message.update({ _id: id }, { $pull: { userLiked: userId }, $inc: { likes: -1 }})
-                  .then(() => res.status(200).json({ message: `Neutre` }))
-                  .catch((error) => res.status(400).json({ error }))
-              }
-            })
-            .catch((error) => res.status(404).json({ error }))
-        break;
     }
-  };
+
 
 function groupCommentByPost(posts){
     let response= [];
@@ -162,7 +149,7 @@ function groupCommentByPost(posts){
         message.dataValues.comments = comment;
         response.push(message);      
     });
-    // response = response.filter(post => post.messageId !== null);
+    response = response.filter(post => post.messageId == null);
     console.log(response);
     return response;
 }

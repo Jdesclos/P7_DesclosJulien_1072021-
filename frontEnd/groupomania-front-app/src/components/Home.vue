@@ -83,7 +83,8 @@
                         <p class="card-text">{{post.content}}</p>
                     </div>
                     <div class="card-footer">
-                        <button type="submit" class="btn" v-text="text" v-bind:class="{'btn-unlike': ! liked, 'btn-like': liked}" @click="toggleLike(post.id)" v-bind:disabled="submitted"><i class="fas fa-thumbs-up"></i></button>
+                        <button v-if="User == post.userLiked" type="submit" class="btn liked"  @click="addLike(post.id)" ><font-awesome-icon icon="thumbs-up" /></button>
+                        <button v-if="User !== post.userLiked" type="submit" class="btn unliked"  @click="addLike(post.id)" ><font-awesome-icon :icon="['far','thumbs-up']" /></button>
                         <a href="#" @click="showComment" class="card-link"><i class="fa fa-comment"></i> Comment</a>
                     </div>
                   <div v-show="toggleComment">
@@ -98,7 +99,7 @@
                         </div>
                     </div>
                   </div>
-                         <div  class="comment_space">
+                         <div  v-for="comment in post.comments" :key="comment.id" class="comment_space">
                     <div  class="comment-header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -106,17 +107,14 @@
                                         <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
                                     </div>
                                     <div class="ml-2">
-                                        <div class="h5 m-0">@{{post.userId}}</div>
+                                        <div class="h5 m-0">@{{comment.userId}}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{post.updatedAt}}</div>
-                            <p class="card-text">{{post.content}}</p>
-                        </div>
-                        <div class="card-footer">
-                            <a href="#" class="card-link"><i class="fa fa-gittip"></i> Like</a>
+                            <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{comment.updatedAt}}</div>
+                            <p class="card-text">{{comment.content}}</p>
                         </div>
                   </div>
                 </div>
@@ -144,7 +142,6 @@ export default {
     return {
         toggleComment: false,
         sendLike: {
-          like:0,
           id:0
         },
       form: {
@@ -190,30 +187,12 @@ export default {
             return this.toggleComment = false
         }
     },
-    toggleLike(id){
-        if(this.liked) {
-            this.addUnlike(id)
-        } else {
-            this.addLike(id)
-    }},
     async addLike(id){
       try {
-          this.submitted = true;
-          this.sendLike.like = 1;
           this.sendLike.id= id;
         await this.LikePost(this.sendLike)
       } catch (error) {
-        throw `Sorry you can't unlike a post now! ${error}`
-      }
-    },
-    async addUnlike(id){
-      try {
-          this.submitted = false;
-          this.sendLike.like = 0;
-          this.sendLike.id= id;
-        await this.LikePost(this.sendLike)
-      } catch (error) {
-        throw `Sorry you can't unlike a post now! ${error}` 
+        throw `${error}`
       }
     }
 },
@@ -227,16 +206,21 @@ label {
   padding: 12px 12px 12px 0;
   display: inline-block;
 }
-button[type=submit] {
-  background-color: #4CAF50;
-  color: white;
+.liked i{
+
+  color: green;
   padding: 12px 20px;
   cursor: pointer;
   border-radius:30px;
   margin: 10px;
 }
-button[type=submit]:hover {
-  background-color: #45a049;
+.unliked i{
+
+  color: grey;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-radius:30px;
+  margin: 10px;
 }
 input {
   width:60%;

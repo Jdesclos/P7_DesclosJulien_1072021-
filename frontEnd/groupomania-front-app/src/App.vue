@@ -13,6 +13,8 @@
 </template>
 <script>
 // @ is an alias to /src
+
+
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import router from "./router"

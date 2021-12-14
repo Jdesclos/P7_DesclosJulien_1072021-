@@ -3,7 +3,10 @@ import App from './App.vue'
 import router from './router';
 import store from '../src/store/modules';
 import axios from 'axios';
-
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faThumbsUp as fasThumbsUp } from '@fortawesome/free-solid-svg-icons'
+import { faThumbsUp  as farThumbsUp} from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 axios.defaults.withCredentials = true
 axios.defaults.baseURL = 'http://localhost:8080';
 axios.interceptors.response.use(undefined, function (error) {
@@ -17,7 +20,8 @@ axios.interceptors.response.use(undefined, function (error) {
     }
   }
 })
-
+library.add(fasThumbsUp, farThumbsUp)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.config.productionTip = false
 new Vue({
   store,
