@@ -65,7 +65,7 @@
 
                 <!--- \\\\\\\Post-->
                 <div v-for="post in Posts" :key="post.id" class="post_area">
-                  <div  class="card gedf-card"  :v-bind:id="post.id">
+                  <div  class="card gedf-card"  v-bind:id="post.id">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex justify-content-between align-items-center">
@@ -73,13 +73,13 @@
                                     <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
                                 </div>
                                 <div class="ml-2">
-                                    <div class="h5 m-0">@{{post.userId}}</div>
+                                    <div class="h5 m-0">@{{post.userId}}<div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{post.updatedAt}}</div></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{post.updatedAt}}</div>
+                        <!-- <img class="aside" v-bind:src:"'asideImage'"> -->
                         <p class="card-text">{{post.content}}</p>
                     </div>
                     <div class="card-footer">

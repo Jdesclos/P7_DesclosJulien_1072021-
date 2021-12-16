@@ -1,5 +1,6 @@
 const db = require("../models");
 const Message = db.message;
+const User = db.user;
 const Op = db.Sequelize.Op;
 const jwt = require("../midleware/auth.midleware")
 // Create and Save a new Messages
@@ -18,7 +19,6 @@ exports.createMessage = (req, res) => {
         messageId:req.body.post.messageId,
         userLiked:'',
     };
-    console.log(message);
     Message.create(message)
     .then(data => {
         res.send(data);
@@ -35,10 +35,9 @@ exports.createMessage = (req, res) => {
 exports.findAllMessage = (req, res) => {
 
     var order   = req.query.order;
-    Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  })
+    Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]})
         .then(data => {
            let posts = groupCommentByPost(data)
-           console.log(posts);
             //requete user id dans data
             res.send(posts);
     })
@@ -105,7 +104,6 @@ exports.deleteMessage = (req, res) => {
 
 exports.findAllById = (req, res) => {
         const id = req.userId;
-        console.log(id);
     Message.findAll({
         where: { userId: id },
         limit: 10
@@ -124,32 +122,49 @@ exports.findAllById = (req, res) => {
 //Likes
 
 exports.like =(req,res,next)=>{
-    console.log(req.body);
     let userId= req.body.userId;
-    let id = req.body.sendLike.id;        
-            Message.findOne({ _id: id })
-            .then((message) => {
-            if(message.userLiked.includes(userId)){
-                Message.update({ _id: id }, { $pull: { userLiked: userId }, $inc: { likes: -1 }})
-                .then(() => res.status(200).json({ message: `Neutre` }))
-                .catch((error) => res.status(400).json({ error }))
+    let id = req.body.sendLike.id;       
+            Message.findOne({where: { id: id }})
+                .then(message => {        
+                    if(message.userLiked.split(",").includes(userId + "")){
+                        Message.decrement('likes',{where: { id: id }});
+                        let userIds = message.userLiked.replace("," + userId + "," , "," );
+                        userIds = userIds.replace(",,","");
+                        Message.update({userLiked: `${userIds}`},{where: { id: id }})
+                        // Message.destroy({userLiked: `${userId}`},{where: { id: id }})
+                        .then(data => {
+                            res.send(data)
+                        })
+                        .catch(err => {
+                            res.status(500).send({
+                                message:
+                                    err.message || "Some error occurred while retrieving messages."
+                            });
+                        });
+                    }else{
+                        Message.increment('likes',{where: { id: id }});
+                        let userIds = message.userLiked + "," + userId + ",";
+                        Message.update({userLiked: `${userIds}`},{where: { id: id }})
+                        .then(data => {
+                            res.send(data)
+                        })
+                        .catch(err => {
+                            res.status(500).send({
+                                message:
+                                    err.message || "Some error occurred while retrieving messages."
+                            });
+                        });
+                    }
+                })
             }
-            else
-            {Message.update({_id: id}, {$push: {userLiked: userId},$inc:{likes: +1}})
-            .then(()=>res.status(200).json({message: `J'aime`}))
-            .catch(console.log(Message),(error)=>res.status(400).json({error}))}
-          })
-    }
-
-
 function groupCommentByPost(posts){
     let response= [];
     posts.forEach(message => {
         const comment = posts.filter(m => message.id === m.messageId);
         message.dataValues.comments = comment;
+        console.log(message.dataValues);
         response.push(message);      
     });
     response = response.filter(post => post.messageId == null);
-    console.log(response);
     return response;
 }
