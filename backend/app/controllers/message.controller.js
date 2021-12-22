@@ -1,34 +1,42 @@
 const db = require("../models");
 const Message = db.message;
 const User = db.user;
+const sq = db.sequelize;
 const Op = db.Sequelize.Op;
-const jwt = require("../midleware/auth.midleware")
+const jwt = require("../midleware/auth.midleware");
+const { sequelize } = require("../models");
 // Create and Save a new Messages
 exports.createMessage = (req, res) => {
-    if (!req.body.post.content) {
+    console.log(req.content)
+    if (!req.body.content) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
     return;
     }
-    const message = {
-        content: req.body.post.content,
-        attachment : req.body.post.attachment,
-        userId:req.userId,
-        likes: 0,
-        messageId:req.body.post.messageId,
-        userLiked:'',
-    };
-    Message.create(message)
-    .then(data => {
-        res.send(data);
-    })
-    .catch(err => {
-        res.status(500).send({
-            message:
-            err.message || "Some error occurred while creating the Message."
-        });
-    })
+    if(req.file == '' || req.file == null){
+        const message = {
+            content: req.body.content,
+            attachment : '',
+            userId:req.userId,
+            likes: 0,
+            messageId:req.body.messageId,
+            userLiked:'',
+        };
+        createMessage(res,message);
+    }else {
+        const message = {
+            content: req.body.content,
+            attachment :  `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+            userId:req.userId,
+            likes: 0,
+            messageId:req.body.messageId,
+            userLiked:'',
+        };
+
+        createMessage(res,message);
+    }
+    
 };
 
 // Retrieve all Messagess from the database.
@@ -49,7 +57,30 @@ exports.findAllMessage = (req, res) => {
     });
 };
 
+exports.findAllMessage1 = (req, res) => {
+    // const dbConfig = require("../config/config.js");
 
+    //     const Sequelize = require("sequelize");
+    //     const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
+    //     host: dbConfig.HOST,
+    //     dialect: dbConfig.dialect,
+    //     operatorsAliases: 0,
+
+    //     pool: {
+    //         max: dbConfig.pool.max,
+    //         min: dbConfig.pool.min,
+    //         acquire: dbConfig.pool.acquire,
+    //         idle: dbConfig.pool.idle
+    //     }
+    //     });
+    // var order   = req.query.order;
+    sq.query('select * from messages ms inner join users us on ms.userId = us.id', null, { raw: true }).then(function(data){
+        console.log(data);
+        //requete user id dans data
+        res.send(data);
+    })
+
+};
 // Update a Messages by the id in the request
 exports.modifyMessage = (req, res) => {
     const id = req.params.id;
@@ -157,12 +188,23 @@ exports.like =(req,res,next)=>{
                     }
                 })
             }
+function createMessage(res, message) {
+    Message.create(message)
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Message."
+            });
+        });
+}
+
 function groupCommentByPost(posts){
     let response= [];
     posts.forEach(message => {
         const comment = posts.filter(m => message.id === m.messageId);
         message.dataValues.comments = comment;
-        console.log(message.dataValues);
         response.push(message);      
     });
     response = response.filter(post => post.messageId == null);

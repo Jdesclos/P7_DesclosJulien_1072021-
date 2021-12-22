@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-
+const path = require("path");
 var cookieParser = require('cookie-parser');
 require('dotenv').config();
 const userRoute = require("./app/routes/userRoute");
@@ -21,7 +21,7 @@ const corsOptions ={
 }
 
 app.use(cors(corsOptions)),
-
+app.use('/images', express.static(path.join(__dirname, 'images')))
 
 // parse requests of content-type - application/json
 app.use(bodyParser.json());

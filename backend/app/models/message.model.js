@@ -1,4 +1,4 @@
-
+const User = require('./user.model.js')
 
 module.exports = (sequelize, Sequelize) => {
     const Message = sequelize.define("message", {
@@ -14,9 +14,6 @@ module.exports = (sequelize, Sequelize) => {
       attachment:{ 
           type:Sequelize.STRING
         },
-      userId : {
-          type: Sequelize.INTEGER
-      },
       messageId : {
         type: Sequelize.INTEGER
      },
@@ -27,18 +24,19 @@ module.exports = (sequelize, Sequelize) => {
      userLiked: {
        type: Sequelize.STRING,
        default:""
-     }},
-     {
-      classMethods: {
-        associate: function(models){
-          models.Message.belongsTo(models.User, {
-            foreignKey:{
-              allowNull: false
-            }
-          })
-        }
-      }
+     }
     });
+    // Message.hasOne(User,{foreignKey:'userId'});
+
+    // Message.associate = models => {
+      
+    //   Message.belongsTo(User, {
+    //     foreignKey: {
+    //       allowNull: false,
+    //       foreignKey : 'user_id'
+    //     }
+    //   })
+    // }
   
     return Message;
   };

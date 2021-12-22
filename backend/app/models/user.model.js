@@ -36,14 +36,9 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING,
             defaultValue:"../../images/profile_picture/default.png"
         }
-    },{
-        classMethods:{
-            associate: function(models){
-                models.User.hasMany(models.Message)
-            }
-        }
-    }    
-    );
-
+    });
+    User.associate = models => {
+        User.hasMany(models.Message)
+    }
     return User;
 };

@@ -4,7 +4,7 @@
             <div class="col-md-3">
                 <div class="card">
                     <div v-if="User" class="card-body">
-                        <div class="h5">@{{User}}</div>
+                        <div class="h5"><a @click="goToProfil(User)">@{{User}}</a></div>
                         <!-- <div class="h7">{{infoUser.bio}} -->
                         <!-- </div> -->
                     </div>
@@ -47,8 +47,7 @@
                             <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
                                 <div class="form-group">
                                     <div class="custom-file">
-                                        <input  type="file" class="custom-file-input" id="customFile">
-                                        <label class="custom-file-label" for="customFile">Upload image</label>
+                                        <input type="file" name="image" @change="handleFileUpload( $event )"/>
                                     </div>
                                 </div>
                                 <div class="py-4"></div>
@@ -79,12 +78,13 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- <img class="aside" v-bind:src:"'asideImage'"> -->
+                        <img class="aside" :src="post.attachment"/>
                         <p class="card-text">{{post.content}}</p>
                     </div>
                     <div class="card-footer">
                         <button v-if="User == post.userLiked" type="submit" class="btn liked"  @click="addLike(post.id)" ><font-awesome-icon icon="thumbs-up" /></button>
                         <button v-if="User !== post.userLiked" type="submit" class="btn unliked"  @click="addLike(post.id)" ><font-awesome-icon :icon="['far','thumbs-up']" /></button>
+                        <p v-if="post.likes != 0 && post.likes !== null">{{post.likes}}</p>
                         <a href="#" @click="showComment" class="card-link"><i class="fa fa-comment"></i> Comment</a>
                     </div>
                   <div v-show="toggleComment">
@@ -145,11 +145,10 @@ export default {
           id:0
         },
       form: {
-        attachement: '',
+        attachment: '',
         content: '',
       },
       formComment: {
-        attachement: '',
         content: '',
       }
     };
@@ -163,6 +162,9 @@ export default {
   },
   methods: {
     ...mapActions(["CreatePost", "GetPosts","CreateComment","LikePost"]),
+    handleFileUpload( event ){
+      this.form.attachment = event.target.files[0];
+    },
     async submit() {
       try {
         await this.CreatePost(this.form)
@@ -194,6 +196,9 @@ export default {
       } catch (error) {
         throw `${error}`
       }
+    },
+    goToProfil(User){
+      this.$router.push({name:`/profil/${User}`})
     }
 },
 };

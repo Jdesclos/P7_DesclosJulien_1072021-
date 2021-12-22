@@ -4,6 +4,7 @@ const state = {
     posts: null,
     token: null,
     userId: null,
+    profil:null,
   };
   
 const getters = {
@@ -14,6 +15,7 @@ const getters = {
     isLogin: state => !!state.user, 
     StatePosts: state => state.posts,
     StateUser: state => state.user,
+    StateProfil: state => state.profil,
     StateToken: state => state.token,
     StateUserId: state => state.userID
 };
@@ -41,11 +43,14 @@ const actions = {
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
         const userId = vuex.auth.userId;
+        const formData = new FormData()
+        formData.append('image', post.attachment)
+        formData.append('content', post.content)
         await axios({
           method:'post',
           url:'/api/home',
-          data:{post, userId},
-          headers:{Authorization: `Bearer ${token}`}
+          data:formData, userId,
+          headers:{'Authorization': `Bearer ${token}` },
         })         
         await dispatch('GetPosts',token)
       },
@@ -53,10 +58,13 @@ const actions = {
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
         const userId = vuex.auth.userId;
+        const formData = new FormData()
+        formData.append('content', post.content)
+        formData.append('messageId', post.messageId)
         await axios({
           method:'post',
           url:'/api/home',
-          data:{post, userId},
+          data:formData, userId,
           headers:{Authorization: `Bearer ${token}`}
         })         
         await dispatch('GetPosts',token)
@@ -70,6 +78,29 @@ const actions = {
           headers:{'Authorization': `Bearer ${token}`},
         }) 
         commit('setPosts', response.data)
+
+      },
+      async GetPostsById({ commit },username){
+        const vuex = JSON.parse(localStorage.getItem('vuex'));
+        const token = vuex.auth.token;
+        let response = await axios({
+          method:'get',
+          url:'/api/home',
+          data: username,
+          headers:{'Authorization': `Bearer ${token}`},
+        }) 
+        commit('setPosts', response.data)
+
+      },
+      async GetProfil({ commit }){
+        const vuex = JSON.parse(localStorage.getItem('vuex'));
+        const token = vuex.auth.token;
+        let response = await axios({
+          method:'get',
+          url:'/profil/:id',
+          headers:{'Authorization': `Bearer ${token}`},
+        }) 
+        commit('setProfil', response.data)
 
       },
       async LogOut({commit}){
@@ -94,6 +125,9 @@ const mutations = {
         setUser(state, username){
             state.user = username
         },
+        setProfil(state, profil){
+          state.profil = profil
+      },
         setUserId(state, userId){
           state.userId = userId
         },
