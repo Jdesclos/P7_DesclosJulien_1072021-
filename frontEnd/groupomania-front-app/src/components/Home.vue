@@ -53,7 +53,7 @@
                                 <div class="py-4"></div>
                             </div>
                         </div>
-                        <div class="btn-toolbar justify-content-between">
+                        <div class=" justify-content-arround">
                             <div class="btn-group">
                                 <button type="submit" class="btn btn-primary">Partager</button>
                             </div>
@@ -61,59 +61,44 @@
                     </div>
                 </form>
                 <!-- Post /////-->
-
+                <h2  class="titleSeparate">Récemment Publiés</h2>
                 <!--- \\\\\\\Post-->
-                <div v-for="post in Posts" :key="post.id" class="post_area">
+                <div v-for="post in Posts" :key="post.id" class="post_area mb-5">
                   <div  class="card gedf-card"  v-bind:id="post.id">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="mr-2">
-                                    <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
-                                </div>
-                                <div class="ml-2">
-                                    <div class="h5 m-0">@{{post.userId}}<div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{post.updatedAt}}</div></div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="d-flex justify-content-between align-items-center card-header">
+                                    <img class="rounded-circle p-2" width="45" src="/*infoUser.profil_Picture*/" alt="">
+                                    <div class="h5 m-0 p-2">@{{post.userId}}</div>
+                                    <div class="text-muted h7 mb-2 p-2"><font-awesome-icon :icon="['far', 'clock']" />{{post.updatedAt | formatDate}}</div>
                     </div>
                     <div class="card-body">
-                        <img class="aside" :src="post.attachment"/>
+                        <img v-if="post.attachment !== ''" class="aside img-responsive mb-4 w-100 h-auto" :src="post.attachment"/>
                         <p class="card-text">{{post.content}}</p>
                     </div>
-                    <div class="card-footer">
-                        <button v-if="User == post.userLiked" type="submit" class="btn liked"  @click="addLike(post.id)" ><font-awesome-icon icon="thumbs-up" /></button>
-                        <button v-if="User !== post.userLiked" type="submit" class="btn unliked"  @click="addLike(post.id)" ><font-awesome-icon :icon="['far','thumbs-up']" /></button>
-                        <p v-if="post.likes != 0 && post.likes !== null">{{post.likes}}</p>
-                        <a href="#" @click="showComment" class="card-link"><i class="fa fa-comment"></i> Comment</a>
+                    <div class="card-footer d-flex align-items-center">
+                        <button v-if="UserId == post.userLiked" type="submit" class="btn liked p-2"  @click="addLike(post.id)" ><font-awesome-icon icon="thumbs-up" /></button>
+                        <button v-if="UserId !== post.userLiked" type="submit" class="btn unliked p-2"  @click="addLike(post.id)" ><font-awesome-icon :icon="['far','thumbs-up']" /></button>
+                        <p class="p2 m-0" v-if="post.likes != 0 && post.likes !== null">{{post.likes}}</p>
+                        <a href="#" @click="showComment" class="card-link ml-auto p-2"><i class="fa fa-comment"></i> Comment</a>
                     </div>
-                  <div v-show="toggleComment">
-                       <div class="form-group">
+                  <div v-show="toggleComment" >
+                       <div class="form-group ">
                                     <label class="sr-only" for="message">post</label>
                                     <textarea v-model="formComment.content" class="form-control" id="message" rows="3" placeholder="Réagir au commentaire">Réagir au commentaire</textarea>
                         </div>
-                        <div class="btn-toolbar justify-content-between">
+                        <div class=" justify-content-arround m-3">
                             <div class="btn-group">
-                                <button @click.stop="showComment" @click="submitComment(post.id)" type="submit" class="btn btn-primary">Partager</button>
+                                <button @click.stop="showComment" @click="submitComment()" type="submit" class="btn btn-primary">Partager</button>
                             </div>
                         </div>
                     </div>
                   </div>
-                         <div  v-for="comment in post.comments" :key="comment.id" class="comment_space">
-                    <div  class="comment-header">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="mr-2">
+                         <div  v-for="comment in post.comments" :key="comment.id" class="card comment_space">
+                    <div  class="comment-header d-flex justify-content-between align-items-center">
                                         <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
-                                    </div>
-                                    <div class="ml-2">
                                         <div class="h5 m-0">@{{comment.userId}}</div>
-                                    </div>
-                                </div>
-                            </div>
+                                        <div class="text-muted h7 mb-2"> <font-awesome-icon :icon="['far', 'clock']" />{{comment.updatedAt | formatDate}}</div>
                         </div>
                         <div class="card-body">
-                            <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{comment.updatedAt}}</div>
                             <p class="card-text">{{comment.content}}</p>
                         </div>
                   </div>
@@ -140,6 +125,7 @@ export default {
   },
   data() {
     return {
+        datePost:'',
         toggleComment: false,
         sendLike: {
           id:0
@@ -171,6 +157,7 @@ export default {
       } catch (error) {
         throw "Sorry you can't make a post now!"
       }
+      this.form.content ="";
     },
     async submitComment(id) {    
       try {
@@ -179,8 +166,10 @@ export default {
       } catch (error) {
         throw "Sorry you can't make a post now!"
       }
+      this.formComment.content ="";
     },
     showComment(){
+      this.toggleComment
         if(!this.toggleComment){
             this.toggleComment = true
             return this.toggleComment
@@ -253,5 +242,16 @@ ul {
   width: 500px;
   margin: auto;
   margin-bottom: 5px;;
+}
+.titleSeparate{
+  margin: 20px 0px;
+}
+.comment_space{
+  border-top:0px;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+}
+.aside{
+  object-fit: cover;
 }
 </style>

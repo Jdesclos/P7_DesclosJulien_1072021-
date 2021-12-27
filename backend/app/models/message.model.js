@@ -24,19 +24,22 @@ module.exports = (sequelize, Sequelize) => {
      userLiked: {
        type: Sequelize.STRING,
        default:""
+     },
+     userId: {
+      type: Sequelize.INTEGER,
      }
     });
-    // Message.hasOne(User,{foreignKey:'userId'});
 
-    // Message.associate = models => {
+
+    Message.associate = models => {
       
-    //   Message.belongsTo(User, {
-    //     foreignKey: {
-    //       allowNull: false,
-    //       foreignKey : 'user_id'
-    //     }
-    //   })
-    // }
+      Message.belongsTo(User, {
+        foreignKey: {
+          allowNull: false,
+          foreignKey : 'user_id'
+        }
+      })
+    }
   
     return Message;
   };

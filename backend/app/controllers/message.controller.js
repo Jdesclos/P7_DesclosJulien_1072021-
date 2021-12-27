@@ -4,7 +4,7 @@ const User = db.user;
 const sq = db.sequelize;
 const Op = db.Sequelize.Op;
 const jwt = require("../midleware/auth.midleware");
-const { sequelize } = require("../models");
+const { sequelize, user } = require("../models");
 // Create and Save a new Messages
 exports.createMessage = (req, res) => {
     console.log(req.content)
@@ -38,16 +38,19 @@ exports.createMessage = (req, res) => {
     }
     
 };
-
+  
 // Retrieve all Messagess from the database.
-exports.findAllMessage = (req, res) => {
+ exports.findAllMessage = async (req, res) => {
 
     var order   = req.query.order;
     Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]})
         .then(data => {
-           let posts = groupCommentByPost(data)
-            //requete user id dans data
+            const newData =  getUsernameFromMessage(data);
+            newData.then(function(value){
+            let posts = groupCommentByPost(value);
             res.send(posts);
+            });
+                 
     })
     .catch(err => {
         res.status(500).send({
@@ -156,11 +159,24 @@ exports.like =(req,res,next)=>{
     let userId= req.body.userId;
     let id = req.body.sendLike.id;       
             Message.findOne({where: { id: id }})
-                .then(message => {        
-                    if(message.userLiked.split(",").includes(userId + "")){
+                .then(message => {       
+                    if(message.userLiked.split(",").includes(userId + ",")){
                         Message.decrement('likes',{where: { id: id }});
                         let userIds = message.userLiked.replace("," + userId + "," , "," );
-                        userIds = userIds.replace(",,","");
+                        Message.update({userLiked: `${userIds}`},{where: { id: id }})
+                        // Message.destroy({userLiked: `${userId}`},{where: { id: id }})
+                        .then(data => {
+                            res.send(data)
+                        })
+                        .catch(err => {
+                            res.status(500).send({
+                                message:
+                                    err.message || "Some error occurred while retrieving messages."
+                            });
+                        });
+                    }else if(message.userLiked.includes(userId)) {
+                        Message.decrement('likes',{where: { id: id }});
+                        let userIds = message.userLiked.replace(userId,"" );
                         Message.update({userLiked: `${userIds}`},{where: { id: id }})
                         // Message.destroy({userLiked: `${userId}`},{where: { id: id }})
                         .then(data => {
@@ -174,20 +190,51 @@ exports.like =(req,res,next)=>{
                         });
                     }else{
                         Message.increment('likes',{where: { id: id }});
-                        let userIds = message.userLiked + "," + userId + ",";
-                        Message.update({userLiked: `${userIds}`},{where: { id: id }})
-                        .then(data => {
-                            res.send(data)
-                        })
-                        .catch(err => {
-                            res.status(500).send({
-                                message:
-                                    err.message || "Some error occurred while retrieving messages."
+                        
+                        if(message.userLiked == ""){
+                            let userIds = userId;
+                            Message.update({userLiked: `${userIds}`},{where: { id: id }})
+                            .then(data => {
+                                res.send(data)
+                            })
+                            .catch(err => {
+                                res.status(500).send({
+                                    message:
+                                        err.message || "Some error occurred while retrieving messages."
+                                });
                             });
-                        });
+                        }else{
+                            let userIds = message.userLiked + "," + userId + ",";
+                            Message.update({userLiked: `${userIds}`},{where: { id: id }})
+                            .then(data => {
+                                res.send(data)
+                            })
+                            .catch(err => {
+                                res.status(500).send({
+                                    message:
+                                        err.message || "Some error occurred while retrieving messages."
+                                });
+                            });
+                        }
+                        
                     }
                 })
             }
+async function getUsernameFromMessage(data) {
+    let dataWitdhUsername = [];
+    await data.forEach((message, index) => {
+        dataWitdhUsername.push(message);
+        User.findOne({ id: message.userId })
+            .then(user => {
+                dataWitdhUsername[index].dataValues.username = user.username;
+            }).catch(err => {
+                res.status(500).json(err);
+            });
+        });
+        console.log(dataWitdhUsername);
+        return dataWitdhUsername
+}
+
 function createMessage(res, message) {
     Message.create(message)
         .then(data => {
