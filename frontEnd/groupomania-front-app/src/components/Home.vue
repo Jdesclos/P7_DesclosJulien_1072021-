@@ -75,24 +75,24 @@
                         <p class="card-text">{{post.content}}</p>
                     </div>
                     <div class="card-footer d-flex align-items-center">
-                        <button v-if="UserId == post.userLiked" type="submit" class="btn liked p-2"  @click="addLike(post.id)" ><font-awesome-icon icon="thumbs-up" /></button>
-                        <button v-if="UserId !== post.userLiked" type="submit" class="btn unliked p-2"  @click="addLike(post.id)" ><font-awesome-icon :icon="['far','thumbs-up']" /></button>
+                        <button  type="submit" class="btn liked p-2"  @click="addLike(post.id)" ><font-awesome-icon icon="thumbs-up" /></button>
+                        <button  type="submit" class="btn unliked p-2"  @click="addLike(post.id)" ><font-awesome-icon :icon="['far','thumbs-up']" /></button>
                         <p class="p2 m-0" v-if="post.likes != 0 && post.likes !== null">{{post.likes}}</p>
                         <a href="#" @click="showComment" class="card-link ml-auto p-2"><i class="fa fa-comment"></i> Comment</a>
                     </div>
                   <div v-show="toggleComment" >
-                       <div class="form-group ">
+                       <div class="form-group " id="comments" aria-labelledby="comments-tab">
                                     <label class="sr-only" for="message">post</label>
                                     <textarea v-model="formComment.content" class="form-control" id="message" rows="3" placeholder="Réagir au commentaire">Réagir au commentaire</textarea>
                         </div>
                         <div class=" justify-content-arround m-3">
                             <div class="btn-group">
-                                <button @click.stop="showComment" @click="submitComment()" type="submit" class="btn btn-primary">Partager</button>
+                                <button @click.stop="showComment(post.id)" @click="submitComment(post.id)" type="submit" class="btn btn-primary">Partager</button>
                             </div>
                         </div>
                     </div>
                   </div>
-                         <div  v-for="comment in post.comments" :key="comment.id" class="card comment_space">
+                         <div  v-for="comment in Comments" :key="comment.id" class="card comment_space">
                     <div  class="comment-header d-flex justify-content-between align-items-center">
                                         <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
                                         <div class="h5 m-0">@{{comment.userId}}</div>
@@ -142,12 +142,13 @@ export default {
   created: function () {
     // a function to call getposts action
     this.GetPosts()
+    this.GetComments()
   },
   computed: {
-    ...mapGetters({Posts: "StatePosts", User: "StateUser", Token:"StateToken"}),
+    ...mapGetters({Posts: "StatePosts", User: "StateUser", Token:"StateToken", Comments:"StateComments"}),
   },
   methods: {
-    ...mapActions(["CreatePost", "GetPosts","CreateComment","LikePost"]),
+    ...mapActions(["CreatePost", "GetPosts","GetComments","CreateComment","LikePost"]),
     handleFileUpload( event ){
       this.form.attachment = event.target.files[0];
     },
@@ -159,7 +160,8 @@ export default {
       }
       this.form.content ="";
     },
-    async submitComment(id) {    
+    async submitComment(id) {  
+      console.log(this.formComment)  
       try {
           this.formComment.messageId = id;
         await this.CreateComment(this.formComment)
@@ -169,6 +171,7 @@ export default {
       this.formComment.content ="";
     },
     showComment(){
+      
       this.toggleComment
         if(!this.toggleComment){
             this.toggleComment = true

@@ -5,9 +5,13 @@ var cookieParser = require('cookie-parser');
 require('dotenv').config();
 const userRoute = require("./app/routes/userRoute");
 const userMessage = require("./app/routes/messageRoute");
+const userComment = require("./app/routes/CommentRoute");
 const app = express();
-const db = require("./app/models");
+const db = require("./models");
 db.sequelize.sync();
+// db.sequelize.sync({ force: true }).then(() => {
+//   console.log("Drop and re-sync db.");
+// });
 app.use(cookieParser());
 
 const cors=require("cors");
@@ -29,6 +33,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // routes
 app.use('/api/', userMessage);
 app.use('/api/', userRoute);
+app.use('/api/', userComment);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

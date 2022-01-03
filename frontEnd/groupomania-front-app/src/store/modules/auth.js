@@ -2,6 +2,7 @@ import axios from 'axios';
 const state = {
     user: null,
     posts: null,
+    comments: null,
     token: null,
     userId: null,
     profil:null,
@@ -14,6 +15,7 @@ const getters = {
     },
     isLogin: state => !!state.user, 
     StatePosts: state => state.posts,
+    StateComments: state => state.comments,
     StateUser: state => state.user,
     StateProfil: state => state.profil,
     StateToken: state => state.token,
@@ -55,6 +57,7 @@ const actions = {
         await dispatch('GetPosts',token)
       },
       async CreateComment({dispatch}, post) {
+        console.log(post)
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
         const userId = vuex.auth.userId;
@@ -63,7 +66,7 @@ const actions = {
         formData.append('messageId', post.messageId)
         await axios({
           method:'post',
-          url:'/api/home',
+          url:'/api/home/comment',
           data:formData, userId,
           headers:{Authorization: `Bearer ${token}`}
         })         
@@ -78,6 +81,17 @@ const actions = {
           headers:{'Authorization': `Bearer ${token}`},
         }) 
         commit('setPosts', response.data)
+
+      },
+      async GetComments({ commit }){
+        const vuex = JSON.parse(localStorage.getItem('vuex'));
+        const token = vuex.auth.token;
+        let response = await axios({
+          method:'get',
+          url:'/api/home/comment',
+          headers:{'Authorization': `Bearer ${token}`},
+        }) 
+        commit('setComments', response.data)
 
       },
       async GetPostsById({ commit },username){
@@ -134,6 +148,9 @@ const mutations = {
         setPosts(state, posts){
             state.posts = posts
         },
+        setComments(state, comments){
+          state.comments = comments
+      },
         setToken(state, token){
           state.token = token
         },
