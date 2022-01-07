@@ -4,7 +4,7 @@
             <div class="col-md-3">
                 <div class="card">
                     <div v-if="User" class="card-body">
-                        <div class="h5"><a @click="goToProfil(User)">@{{User}}</a></div>
+                        <div class="h5 d-flex"><p class="mr-2">Bonjour</p><a @click="goToProfil(User)">@{{User}}</a></div>
                         <!-- <div class="h7">{{infoUser.bio}} -->
                         <!-- </div> -->
                     </div>
@@ -65,38 +65,37 @@
                 <!--- \\\\\\\Post-->
                 <div v-for="post in Posts" :key="post.id" class="post_area mb-5">
                   <div  class="card gedf-card"  v-bind:id="post.id">
-                    <div class="d-flex justify-content-between align-items-center card-header">
-                                    <img class="rounded-circle p-2" width="45" src="/*infoUser.profil_Picture*/" alt="">
-                                    <div class="h5 m-0 p-2">@{{post.userId}}</div>
-                                    <div class="text-muted h7 mb-2 p-2"><font-awesome-icon :icon="['far', 'clock']" />{{post.updatedAt | formatDate}}</div>
+                    <div class="d-flex  align-items-center card-header">
+                                    <img class="rounded-circle mr-2" width="45" :src="post.profilePicture" alt="">
+                                    <div class="h5 m-0 ">@{{post.username}}</div>
+                                    <div class="text-muted ml-auto h7"><font-awesome-icon :icon="['far', 'clock']" />{{post.updatedAt | formatDate}}</div>
                     </div>
                     <div class="card-body">
                         <img v-if="post.attachment !== ''" class="aside img-responsive mb-4 w-100 h-auto" :src="post.attachment"/>
                         <p class="card-text">{{post.content}}</p>
                     </div>
-                    <div class="card-footer d-flex align-items-center">
-                        <button  type="submit" class="btn liked p-2"  @click="addLike(post.id)" ><font-awesome-icon icon="thumbs-up" /></button>
-                        <button  type="submit" class="btn unliked p-2"  @click="addLike(post.id)" ><font-awesome-icon :icon="['far','thumbs-up']" /></button>
-                        <p class="p2 m-0" v-if="post.likes != 0 && post.likes !== null">{{post.likes}}</p>
-                        <a href="#" @click="showComment" class="card-link ml-auto p-2"><i class="fa fa-comment"></i> Comment</a>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <button  type="submit" class="btn liked p-2"  @click="addLike(post.id)" ><font-awesome-icon v-if="post.userLiked.includes(UserId)"  icon="thumbs-up" /><font-awesome-icon v-if="!post.userLiked.includes(UserId)" :icon="['far','thumbs-up']" /></button>
+                        <p class="p2 m-0" v-if="post.likes != 0 && post.likes !== null">Personnes ayant aimés ce post: {{post.likes}}</p>
+                        
                     </div>
-                  <div v-show="toggleComment" >
-                       <div class="form-group " id="comments" aria-labelledby="comments-tab">
+                  <div class="d-flex align-items-center">
+                       <div class="form-group flex-1 mt-3" id="comments" aria-labelledby="comments-tab">
                                     <label class="sr-only" for="message">post</label>
-                                    <textarea v-model="formComment.content" class="form-control" id="message" rows="3" placeholder="Réagir au commentaire">Réagir au commentaire</textarea>
+                                    <textarea v-model="formComment.content" class="form-control form-comment m-0" id="comment" rows="8" placeholder="Réagir au post">Réagir au au post</textarea>
                         </div>
                         <div class=" justify-content-arround m-3">
                             <div class="btn-group">
-                                <button @click.stop="showComment(post.id)" @click="submitComment(post.id)" type="submit" class="btn btn-primary">Partager</button>
+                                <button  @click="submitComment(post.id)" type="submit" class="btn btn-primary">Partager</button>
                             </div>
                         </div>
                     </div>
                   </div>
-                         <div  v-for="comment in Comments" :key="comment.id" class="card comment_space">
-                    <div  class="comment-header d-flex justify-content-between align-items-center">
-                                        <img class="rounded-circle" width="45" src="/*infoUser.profil_Picture*/" alt="">
-                                        <div class="h5 m-0">@{{comment.userId}}</div>
-                                        <div class="text-muted h7 mb-2"> <font-awesome-icon :icon="['far', 'clock']" />{{comment.updatedAt | formatDate}}</div>
+                         <div  v-for="comment in post.comments" :key="comment.id" class="card comment_space">
+                    <div  class="comment-header card-header d-flex align-items-center">
+                                        <img class="rounded-circle mr-2" width="45" :src="comment.profilePicture" alt="">
+                                        <div class="h5 m-0">@{{comment.username}}</div>
+                                        <div class=" ml-auto text-muted h7"> <font-awesome-icon :icon="['far', 'clock']" />{{comment.updatedAt | formatDate}}</div>
                         </div>
                         <div class="card-body">
                             <p class="card-text">{{comment.content}}</p>
@@ -126,7 +125,6 @@ export default {
   data() {
     return {
         datePost:'',
-        toggleComment: false,
         sendLike: {
           id:0
         },
@@ -142,13 +140,12 @@ export default {
   created: function () {
     // a function to call getposts action
     this.GetPosts()
-    this.GetComments()
   },
   computed: {
-    ...mapGetters({Posts: "StatePosts", User: "StateUser", Token:"StateToken", Comments:"StateComments"}),
+    ...mapGetters({Posts: "StatePosts", User: "StateUser", Token:"StateToken", Comments:"StateComments", UserId: "StateUserId"}),
   },
   methods: {
-    ...mapActions(["CreatePost", "GetPosts","GetComments","CreateComment","LikePost"]),
+    ...mapActions(["CreatePost", "GetPosts","CreateComment","LikePost"]),
     handleFileUpload( event ){
       this.form.attachment = event.target.files[0];
     },
@@ -161,25 +158,13 @@ export default {
       this.form.content ="";
     },
     async submitComment(id) {  
-      console.log(this.formComment)  
       try {
           this.formComment.messageId = id;
         await this.CreateComment(this.formComment)
       } catch (error) {
         throw "Sorry you can't make a post now!"
       }
-      this.formComment.content ="";
-    },
-    showComment(){
-      
-      this.toggleComment
-        if(!this.toggleComment){
-            this.toggleComment = true
-            return this.toggleComment
 
-        }else {
-            return this.toggleComment = false
-        }
     },
     async addLike(id){
       try {
@@ -198,6 +183,9 @@ export default {
 <style scoped>
 * {
   box-sizing: border-box;
+}
+.flex-1{
+  flex:1;
 }
 label {
   padding: 12px 12px 12px 0;
@@ -237,6 +225,11 @@ textarea {
   height:150px;
   margin: 15px;
 }
+.form-comment{
+  width: 90%;
+  height: 70px;
+  vertical-align: middle !important;
+}
 ul {
   list-style: none;
 }
@@ -256,5 +249,8 @@ ul {
 }
 .aside{
   object-fit: cover;
+}
+.card-footer{
+  border-bottom: 1px solid rgba(0,0,0,.125);
 }
 </style>

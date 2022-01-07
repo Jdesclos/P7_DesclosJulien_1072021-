@@ -2,10 +2,10 @@ import axios from 'axios';
 const state = {
     user: null,
     posts: null,
-    comments: null,
     token: null,
     userId: null,
     profil:null,
+    isAdmin:null,
   };
   
 const getters = {
@@ -15,11 +15,11 @@ const getters = {
     },
     isLogin: state => !!state.user, 
     StatePosts: state => state.posts,
-    StateComments: state => state.comments,
     StateUser: state => state.user,
     StateProfil: state => state.profil,
     StateToken: state => state.token,
-    StateUserId: state => state.userID
+    StateUserId: state => state.userId,
+    SateIsAdmin: state => state.isAdmin,
 };
 
 const actions = {
@@ -33,10 +33,12 @@ const actions = {
       },
       async LogIn({commit}, User) {
         await axios.post('/api/users/login', User)
-        .then(function (response) {          
+        .then(function (response) {      
           const token = response.data.token;
           const userId = response.data.userId;
+          const isAdmin = response.data.isAdmin;
           commit('setUserId', userId)
+          commit('setIsAdmin', isAdmin)
           return commit('setToken', token)
         })
         await commit('setUser', User.get('username'))
@@ -61,12 +63,13 @@ const actions = {
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
         const userId = vuex.auth.userId;
-        const formData = new FormData()
-        formData.append('content', post.content)
-        formData.append('messageId', post.messageId)
+        const formData = new FormData();
+        formData.append('content', post.content);
+        formData.append('messageId', post.messageId);
+        console.log(formData)
         await axios({
           method:'post',
-          url:'/api/home/comment',
+          url:'/api/home',
           data:formData, userId,
           headers:{Authorization: `Bearer ${token}`}
         })         
@@ -83,17 +86,17 @@ const actions = {
         commit('setPosts', response.data)
 
       },
-      async GetComments({ commit }){
-        const vuex = JSON.parse(localStorage.getItem('vuex'));
-        const token = vuex.auth.token;
-        let response = await axios({
-          method:'get',
-          url:'/api/home/comment',
-          headers:{'Authorization': `Bearer ${token}`},
-        }) 
-        commit('setComments', response.data)
+      // async GetComments({ commit }){
+      //   const vuex = JSON.parse(localStorage.getItem('vuex'));
+      //   const token = vuex.auth.token;
+      //   let response = await axios({
+      //     method:'get',
+      //     url:'/api/home',
+      //     headers:{'Authorization': `Bearer ${token}`},
+      //   }) 
+      //   commit('setComments', response.data)
 
-      },
+      // },
       async GetPostsById({ commit },username){
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
@@ -139,6 +142,9 @@ const mutations = {
         setUser(state, username){
             state.user = username
         },
+        setIsAdmin(state, isAdmin){
+          state.isAdmin = isAdmin
+      },
         setProfil(state, profil){
           state.profil = profil
       },
@@ -148,9 +154,6 @@ const mutations = {
         setPosts(state, posts){
             state.posts = posts
         },
-        setComments(state, comments){
-          state.comments = comments
-      },
         setToken(state, token){
           state.token = token
         },

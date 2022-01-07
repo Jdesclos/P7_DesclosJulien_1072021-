@@ -16,6 +16,10 @@ module.exports = {
           key:'id'
         }
       },
+      messageId: {
+        type:Sequelize.INTEGER,
+        allowNull: true
+      },
       content: {
         allowNull: false,
         type: Sequelize.STRING

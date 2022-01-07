@@ -27,6 +27,10 @@ module.exports = {
       isAdmin: {
         type: Sequelize.BOOLEAN
       },
+      profilePicture:{
+        type:Sequelize.STRING,
+        defaultValue: "http://localhost:8080/images/default-profile.jpg"
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

@@ -31,27 +31,48 @@ exports.register = (req, res, next) => {
     }
     bcrypt.hash(password, 10)
     .then(hash => {
-        const user = ({
-            email: email,
-            username:username,
-            password: hash,
-            bio:bio,
-            profilePicture: profilePicture,
-            isAdmin: false
-        });
-        User.create(user)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                err.message || "Some error occurred while creating the User."
+        console.log(User.length)
+        if(User.length < 1){
+            const user = ({
+                email: email,
+                username:username,
+                password: hash,
+                bio:bio,
+                profilePicture: profilePicture,
+                isAdmin: true
             });
-        })
-    })
-};
-
+            User.create(user)
+            .then(data => {
+                res.send(data);
+            })
+            .catch(err => {
+                res.status(500).send({
+                    message:
+                    err.message || "Some error occurred while creating the User."
+                });
+            })
+        }else {
+            const user = ({
+                email: email,
+                username:username,
+                password: hash,
+                bio:bio,
+                profilePicture: profilePicture,
+                isAdmin: false
+            });
+            User.create(user)
+            .then(data => {
+                res.send(data);
+            })
+            .catch(err => {
+                res.status(500).send({
+                    message:
+                    err.message || "Some error occurred while creating the User."
+                });
+            })            
+        }
+    });
+}
 exports.login = (req,res, next) => {
     let username    = req.body.username;
     let password = req.body.password;
@@ -78,6 +99,7 @@ exports.login = (req,res, next) => {
                     userId: user.id,
                     token: jwtUtils.generateTokenForUser(user),
                     username: user.username,
+                    isAdmin:user.isAdmin,
                 });
             }
             })

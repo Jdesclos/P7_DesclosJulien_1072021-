@@ -7,7 +7,8 @@ const jwt = require("../midleware/auth.midleware");
 const { sequelize, user } = require("../../models");
 // Create and Save a new Messages
 exports.createMessage = (req, res) => {
-    if (!req.body.content) {
+    console.log(req.body.content)
+    if (!req.body) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
@@ -42,17 +43,20 @@ exports.createMessage = (req, res) => {
  exports.findAllMessage = async (req, res) => {
 
     var order   = req.query.order;
-    Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]})
-        .then(data => {
-            res.send(data);
-            })
-    .catch(err => {
-        res.status(500).send({
-            message:
-                err.message || "Some error occurred while retrieving Messages."
-        });
-    });
+    let messages = await Message.findAll({ limit: 10, order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']]  } ,{include: [{model: User,required: true}]});
+    let users = await User.findAll();    
+    if(messages) {
+        if(users){
+            messagesWithUser = mapUserToMessage(messages, users);
+            console.log(messagesWithUser)
+            let posts = groupCommentByPost(messagesWithUser)
+            console.log(posts)
+            res.send(posts);
+        }
+    }
+    
 };
+
 
 // Update a Messages by the id in the request
 exports.modifyMessage = (req, res) => {
@@ -190,29 +194,44 @@ exports.like =(req,res,next)=>{
                     }
                 })
             }
-async function getUsernameFromMessage(data) {
-    let dataWitdhUsername = [];
-    await data.forEach((message, index) => {
-        dataWitdhUsername.push(message);
-        User.findOne({ id: message.userId })
-            .then(user => {
-                dataWitdhUsername[index].dataValues.username = user.username;
-            }).catch(err => {
-                res.status(500).json(err);
-            });
+            
+            
+function createMessage(res, message) {
+     Message.create(message)
+         .then(data => {
+                 res.send(data);
+         })
+        .catch(err => {
+             res.status(500).send({
+                 message: err.message || "Some error occurred while creating the Message."
+             });
         });
-        console.log(dataWitdhUsername);
-        return dataWitdhUsername
+}
+            
+function mapUserToMessage(messages, users) {
+    messagesWithUserName = []
+    messages.forEach(message => {
+        users.forEach(user => {
+            if(user.dataValues.id == message.dataValues.UserId){
+                let id = user.dataValues.id;
+                message.dataValues.username = users[id -1].dataValues.username;
+                message.dataValues.profilePicture= users[id -1].dataValues.profilePicture;
+                messagesWithUserName.push(message);
+            }
+                        
+        })
+    });
+    return messagesWithUserName;
 }
 
-function createMessage(res, message) {
-    Message.create(message)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating the Message."
-            });
-        });
+
+function groupCommentByPost(posts){
+    let response= [];
+    posts.forEach(message => {
+        const comment = posts.filter(m => message.id === m.messageId);
+        message.dataValues.comments = comment;
+        response.push(message);      
+    });
+    response = response.filter(post => post.messageId == null);
+    return response;
 }
