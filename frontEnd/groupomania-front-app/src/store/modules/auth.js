@@ -4,7 +4,7 @@ const state = {
     posts: null,
     token: null,
     userId: null,
-    profil:null,
+    profile:null,
     isAdmin:null,
   };
   
@@ -16,7 +16,7 @@ const getters = {
     isLogin: state => !!state.user, 
     StatePosts: state => state.posts,
     StateUser: state => state.user,
-    StateProfil: state => state.profil,
+    StateProfile: state => state.profile,
     StateToken: state => state.token,
     StateUserId: state => state.userId,
     SateIsAdmin: state => state.isAdmin,
@@ -86,17 +86,6 @@ const actions = {
         commit('setPosts', response.data)
 
       },
-      // async GetComments({ commit }){
-      //   const vuex = JSON.parse(localStorage.getItem('vuex'));
-      //   const token = vuex.auth.token;
-      //   let response = await axios({
-      //     method:'get',
-      //     url:'/api/home',
-      //     headers:{'Authorization': `Bearer ${token}`},
-      //   }) 
-      //   commit('setComments', response.data)
-
-      // },
       async GetPostsById({ commit },username){
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
@@ -109,15 +98,15 @@ const actions = {
         commit('setPosts', response.data)
 
       },
-      async GetProfil({ commit }){
+      async GetProfile({ commit }, id){
         const vuex = JSON.parse(localStorage.getItem('vuex'));
         const token = vuex.auth.token;
         let response = await axios({
           method:'get',
-          url:'/profil/:id',
+          url:`/api/profile/${id}`,
           headers:{'Authorization': `Bearer ${token}`},
         }) 
-        commit('setProfil', response.data)
+        commit('setProfile', response.data)
 
       },
       async LogOut({commit}){
@@ -145,8 +134,8 @@ const mutations = {
         setIsAdmin(state, isAdmin){
           state.isAdmin = isAdmin
       },
-        setProfil(state, profil){
-          state.profil = profil
+        setProfile(state, profile){
+          state.profile = profile
       },
         setUserId(state, userId){
           state.userId = userId

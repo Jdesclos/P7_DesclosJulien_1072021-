@@ -4,7 +4,7 @@
             <div class="col-md-3">
                 <div class="card">
                     <div v-if="User" class="card-body">
-                        <div class="h5 d-flex"><p class="mr-2">Bonjour</p><a @click="goToProfil(User)">@{{User}}</a></div>
+                        <div class="h5 d-flex"><p class="mr-2">Bonjour</p><a @click="goToProfile(UserId)">@{{User}}</a></div>
                         <!-- <div class="h7">{{infoUser.bio}} -->
                         <!-- </div> -->
                     </div>
@@ -42,7 +42,6 @@
                                     <label class="sr-only" for="message">post</label>
                                     <textarea v-model="form.content" class="form-control" id="message" rows="3" placeholder="Ecrivez ce qui vous passe par la tête"></textarea>
                                 </div>
-
                             </div>
                             <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
                                 <div class="form-group">
@@ -67,7 +66,7 @@
                   <div  class="card gedf-card"  v-bind:id="post.id">
                     <div class="d-flex  align-items-center card-header">
                                     <img class="rounded-circle mr-2" width="45" :src="post.profilePicture" alt="">
-                                    <div class="h5 m-0 ">@{{post.username}}</div>
+                                    <div class="h5 m-0 "><a @click="goToProfile(post.UserId)">@{{post.username}}</a></div>
                                     <div class="text-muted ml-auto h7"><font-awesome-icon :icon="['far', 'clock']" />{{post.updatedAt | formatDate}}</div>
                     </div>
                     <div class="card-body">
@@ -94,7 +93,7 @@
                          <div  v-for="comment in post.comments" :key="comment.id" class="card comment_space">
                     <div  class="comment-header card-header d-flex align-items-center">
                                         <img class="rounded-circle mr-2" width="45" :src="comment.profilePicture" alt="">
-                                        <div class="h5 m-0">@{{comment.username}}</div>
+                                        <div class="h5 m-0"><a @click="goToProfile(comment.UserId)">@{{comment.username}}</a></div>
                                         <div class=" ml-auto text-muted h7"> <font-awesome-icon :icon="['far', 'clock']" />{{comment.updatedAt | formatDate}}</div>
                         </div>
                         <div class="card-body">
@@ -174,8 +173,8 @@ export default {
         throw `${error}`
       }
     },
-    goToProfil(User){
-      this.$router.push({name:`/profil/${User}`})
+    goToProfile(id){
+      this.$router.push({name:'Profile', query:{id: `${id}`}, param:{id: `${id}`}});
     }
 },
 };

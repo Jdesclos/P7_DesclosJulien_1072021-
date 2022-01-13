@@ -7,7 +7,6 @@ const jwt = require("../midleware/auth.midleware");
 const { sequelize, user } = require("../../models");
 // Create and Save a new Messages
 exports.createMessage = (req, res) => {
-    console.log(req.body.content)
     if (!req.body) {
         res.status(400).send({
             message: "Content can not be empty!"
@@ -48,9 +47,7 @@ exports.createMessage = (req, res) => {
     if(messages) {
         if(users){
             messagesWithUser = mapUserToMessage(messages, users);
-            console.log(messagesWithUser)
             let posts = groupCommentByPost(messagesWithUser)
-            console.log(posts)
             res.send(posts);
         }
     }

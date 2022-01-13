@@ -110,7 +110,6 @@ exports.login = (req,res, next) => {
 
 exports.update = (req, res) => {
     const id = req.params.id;
-  console.log(req.body)
     User.update(req.body, {
       where: { id: id }
     })
@@ -157,8 +156,10 @@ exports.delete = (req, res) => {
 };
 
 exports.getUser = (req,res)=> {
-    const username = req.body.username;
-    User.findOne({ where: { username: username }})
+    console.log(req.params)
+    const id = req.params.id;
+    console.log(id)
+    User.findOne({ where: { id: id }})
     .then(data => {
         res.send(data);
     })
