@@ -1,1 +1,1 @@
-cd backend
+nodemon backend/server.js
